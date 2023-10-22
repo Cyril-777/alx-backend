@@ -3,6 +3,7 @@
 
 
 import csv
+import math
 from typing import List, Tuple
 
 
@@ -36,26 +37,32 @@ class Server:
 
     def get_hyper_index(self, index: int = None, page_size: int = 10) -> dict:
         """return a dictionary containing the following key-value pairs"""
-        assert isinstance(index, int) and index >= 0
+        assert index is None or (isinstance(index, int) and index >= 0)
         assert isinstance(page_size, int) and page_size > 0
 
         indexed_dataset = self.indexed_dataset()
-        data = []
+        max_index = len(indexed_dataset) - 1
 
+        if index is None:
+            # Set index to 0 if it's None
+            index = 0
+        elif index > max_index:
+            raise AssertionError("Index is out of range")
+
+        data = []
         next_index = index
-        for key in range(index, len(indexed_dataset)):
-            if len(data) < page_size:
-                if key in indexed_dataset:
-                    data.append(indexed_dataset[key])
-                    next_index = key + 1
-            else:
-                break
+        for _ in range(page_size):
+            if next_index in indexed_dataset:
+                data.append(indexed_dataset[next_index])
+                next_index += 1
+            elif next_index <= max_index:
+                next_index += 1
 
         return {
-            'index': index,
-            'next_index': next_index,
-            'page_size': len(data),
-            'data': data
+            "index": index,
+            "data": data,
+            "page_size": page_size,
+            "next_index": next_index if next_index <= max_index else None
         }
 
 
