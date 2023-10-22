@@ -35,6 +35,21 @@ class Server:
             }
         return self.__indexed_dataset
 
+    def get_page(self, page: int = 1, page_size: int = 10) -> List[List]:
+        """return the appropriate page of the dataset
+        (i.e. the correct list of rows)."""
+        assert isinstance(page, int) and page > 0
+        assert isinstance(page_size, int) and page_size > 0
+
+        dataset = self.dataset()
+        total_rows = len(dataset)
+
+        if (page - 1) * page_size >= total_rows:
+            return []
+
+        start, end = index_range(page, page_size)
+        return dataset[start:end]
+
     def get_hyper_index(self, index: int = None, page_size: int = 10) -> dict:
         """return a dictionary containing the following key-value pairs"""
         assert index is None or (isinstance(index, int) and index >= 0)
@@ -64,8 +79,3 @@ class Server:
             "page_size": page_size,
             "next_index": next_index if next_index <= max_index else None
         }
-
-
-def index_range(page: int, page_size: int) -> Tuple[int, int]:
-    """return a tuple of size two containing start index and an end index"""
-    return ((page - 1) * page_size, page * page_size)
