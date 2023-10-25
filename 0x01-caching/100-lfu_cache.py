@@ -9,7 +9,7 @@ class LFUCache(BaseCaching):
 
     def __init__(self):
         """ Initialize the LFUCache """
-        super().__init()
+        super().__init__()
         self.frequency = {}  # Keeps track of frequency of each key
         self.lru_list = []   # Tracks the order of access for keys
 
