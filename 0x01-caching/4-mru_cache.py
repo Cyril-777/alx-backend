@@ -10,7 +10,7 @@ class MRUCache(BaseCaching):
 
     def __init__(self):
         """ Initialize the MRUCache """
-        super().__init()
+        super().__init__()
         self.mru_list = []
 
     def put(self, key, item):
