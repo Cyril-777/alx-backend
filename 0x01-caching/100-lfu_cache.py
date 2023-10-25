@@ -15,35 +15,26 @@ class LFUCache(BaseCaching):
 
     def put(self, key, item):
         """ Add an item in the cache """
-        if key is None or item is None:
-            return
+        if key and item:
+            if (len(self.lru_list) >= self.MAX_ITEMS and
+                    not self.cache_data.get(key)):
+                delete = self.lru_list.pop(0)
+                self.frequency.pop(delete)
+                self.cache_data.pop(delete)
+                print('DISCARD: {}'.format(delete))
 
-        if key in self.cache_data:
-            # Key exists, increase its frequency and update access order
-            self.frequency[key] += 1
-            self.lru_list.remove(key)
-        else:
-            # Key is new, initialize its frequency
-            self.frequency[key] = 1
-
-        if len(self.cache_data) >= self.MAX_ITEMS:
-            # Find the least frequent key(s), and in case of a tie, use LRU
-            lfu_keys = [key for key in self.cache_data
-                        if self.frequency[key] == min(self.frequency
-                                                      .values())]
-            lru_key = min(self.lru_list, key=self.lru_list.index)
-            if len(lfu_keys) > 1:
-                key_to_discard = min(lfu_keys, key=self.lru_list.index)
+            if self.cache_data.get(key):
+                self.lru_list.remove(key)
+                self.frequency[key] += 1
             else:
-                key_to_discard = lfu_keys[0]
+                self.frequency[key] = 0
 
-            del self.cache_data[key_to_discard]
-            del self.frequency[key_to_discard]
-            self.lru_list.remove(key_to_discard)
-            print(f"DISCARD: {key_to_discard}")
-
-        self.cache_data[key] = item
-        self.lru_list.append(key)
+            insert_index = 0
+            while (insert_index < len(self.lru_list) and
+                   not self.frequency[self.lru_list[insert_index]]):
+                insert_index += 1
+            self.lru_list.insert(insert_index, key)
+            self.cache_data[key] = item
 
     def get(self, key):
         """ Get an item by key """
